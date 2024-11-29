@@ -1,0 +1,292 @@
+#report: "reports/workflow.rst"
+
+rule endpoint:
+    input:
+        "results/plots/auic_hpo_models.pdf",
+        "results/plots/auic_hpo_biobert.pdf",
+        "results/plots/auic_hpo_biolord.pdf",
+        "results/plots/auic_go_biological_process_models.pdf",
+        "results/plots/auic_go_cellular_component_models.pdf",
+        "results/plots/auic_go_molecular_function_models.pdf",
+        "results/plots/auic_go_biolord_biological_process.pdf",
+        "results/plots/auic_go_biolord_cellular_component.pdf",
+        "results/plots/auic_go_biolord_molecular_function.pdf",
+        "results/plots/auic_go_biobert_biological_process.pdf",
+        "results/plots/auic_go_biobert_cellular_component.pdf",
+        "results/plots/auic_go_biobert_molecular_function.pdf",
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    rule:
+        name: f"auic_go_biobert_{subgo}"
+        input:
+            f"data/go/go_{subgo}_embs.csv",
+            f"results/go/classes_{subgo}.pck",
+            f"results/go/set_classes_{subgo}.pck",
+            f"results/go/q_jef_{subgo}.pck",
+            f"results/go/q_js_{subgo}.pck",
+            f"results/go/q_kl_{subgo}.pck",
+            f"results/go/q_hell_{subgo}.pck",
+            f"results/go/q_tvm_{subgo}.pck",
+            f"results/go/q_bha_{subgo}.pck"
+        params:
+            sub = f'{subgo}'
+        output:
+            report(f"results/plots/auic_go_biobert_{subgo}.pdf", category="Plots GO")
+        script:
+            "scripts/generate_auic_go.py"
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    rule:
+        name: f"generate_auic_models_go_{subgo}"
+        input:
+            f"data/go/go_{subgo}_embs.csv",
+            f"data/go/go_{subgo}_embs_mpnet.csv",
+            f"data/go/go_{subgo}_embs_biolord.csv",
+            f"data/go/go_{subgo}_embs_edu.csv",
+            f"results/go/classes_{subgo}.pck",
+            f"results/go/set_classes_{subgo}.pck",
+            f"results/go/q_kl_{subgo}.pck",
+            f"results/go/q_kl_{subgo}_mpnet.pck",
+            f"results/go/q_kl_{subgo}_biolord.pck",
+            f"results/go/q_kl_{subgo}_edu.pck",
+        params:
+            sub = f'{subgo}'
+        output:
+            report(f"results/plots/auic_go_{subgo}_models.pdf", category="Plots GO")
+        script:
+            "scripts/generate_auic_models_go.py"
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    rule:
+        name: f"auic_go_biolord_{subgo}"
+        input:
+            f"data/go/go_{subgo}_embs_biolord.csv",
+            f"results/go/classes_{subgo}.pck",
+            f"results/go/set_classes_{subgo}.pck",
+            f"results/go/q_jef_{subgo}_biolord.pck",
+            f"results/go/q_js_{subgo}_biolord.pck",
+            f"results/go/q_kl_{subgo}_biolord.pck",
+            f"results/go/q_hell_{subgo}_biolord.pck",
+            f"results/go/q_tvm_{subgo}_biolord.pck",
+            f"results/go/q_bha_{subgo}_biolord.pck"
+        params:
+            sub = f'{subgo}'
+        output:
+            report(f"results/plots/auic_go_biolord_{subgo}.pdf", category="Plots GO")
+        script:
+            "scripts/generate_auic_go.py"
+
+rule auic_biolord:
+    input:
+        "data/hpo/phen_map.pck",
+        "data/hpo/phen_FremyCompany/BioLORD-2023.csv",
+        "results/hpo/classes.pck",
+        "results/hpo/set_classes.pck",
+        "results/hpo/q_jef_biolord.pck",
+        "results/hpo/q_js_biolord.pck",
+        "results/hpo/q_kl_biolord.pck",
+        "results/hpo/q_hell_biolord.pck",
+        "results/hpo/q_tvm_biolord.pck",
+        "results/hpo/q_bha_biolord.pck"
+    output:
+        report("results/plots/auic_hpo_biolord.pdf", category="Plots HPO")
+    script:
+        "scripts/generate_auic.py"
+
+rule auic_biobert:
+    input:
+        "data/hpo/phen_map.pck",
+        "data/hpo/phen.csv",
+        "results/hpo/classes.pck",
+        "results/hpo/set_classes.pck",
+        "results/hpo/q_jef.pck",
+        "results/hpo/q_js.pck",
+        "results/hpo/q_kl.pck",
+        "results/hpo/q_hell.pck",
+        "results/hpo/q_tvm.pck",
+        "results/hpo/q_bha.pck"
+    output:
+        report("results/plots/auic_hpo_biobert.pdf", category="Plots HPO")
+    script:
+        "scripts/generate_auic.py"
+
+for dist in ["kl", "hell", "jef", "js", "tvm", "bha"]:
+    rule:
+        name: f"generate_matrix_biolord_{dist}"
+        input:
+            "data/hpo/phen_map.pck",
+            f"data/hpo/phen_FremyCompany/BioLORD-2023.csv",
+            "results/hpo/classes.pck",
+            "results/hpo/set_classes.pck"
+        output:
+            f"results/hpo/q_{dist}_biolord.pck"
+        params:
+            dist=f"{dist}"
+        script:
+            "scripts/generate_hpo_matrix.py" 
+
+for dist in ["kl", "hell", "jef", "js", "tvm", "bha"]:
+    rule:
+        name: f"generate_matrix_{dist}"
+        input:
+            "data/hpo/phen_map.pck",
+            "data/hpo/phen.csv",
+            "results/hpo/classes.pck",
+            "results/hpo/set_classes.pck"
+        output:
+            f"results/hpo/q_{dist}.pck"
+        params:
+            dist=f"{dist}"
+        script:
+            "scripts/generate_hpo_matrix.py" 
+
+rule generate_classes_hpo:
+    input:
+        "data/hpo/phen_map.pck",
+        "data/hpo/phen.csv",
+    output:
+        "results/hpo/classes.pck", 
+        "results/hpo/set_classes.pck"
+    script:
+        "scripts/get_classes_hpo.py"
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    for dist in ["kl", "hell", "jef", "js", "tvm", "bha"]:
+        rule:
+            name: f"generate_matrix_{dist}_go_{subgo}_biolord"
+            input:
+                f"data/go/go_{subgo}_embs_biolord.csv",
+                f"results/go/classes_{subgo}.pck",
+                f"results/go/set_classes_{subgo}.pck"
+            output:
+                f"results/go/q_{dist}_{subgo}_biolord.pck"
+            params:
+                dist=f"{dist}",
+                sub=f"{subgo}"
+            script:
+                "scripts/generate_go_matrix.py" 
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    for dist in ["kl"]:
+        rule:
+            name: f"generate_matrix_{dist}_go_{subgo}_edu"
+            input:
+                f"data/go/go_{subgo}_embs_edu.csv",
+                f"results/go/classes_{subgo}.pck",
+                f"results/go/set_classes_{subgo}.pck"
+            output:
+                f"results/go/q_{dist}_{subgo}_edu.pck"
+            params:
+                dist=f"{dist}",
+                sub=f"{subgo}"
+            script:
+                "scripts/generate_go_matrix.py" 
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    for dist in ["kl"]:
+        rule:
+            name: f"generate_matrix_{dist}_go_{subgo}_mpnet"
+            input:
+                f"data/go/go_{subgo}_embs_mpnet.csv",
+                f"results/go/classes_{subgo}.pck",
+                f"results/go/set_classes_{subgo}.pck"
+            output:
+                f"results/go/q_{dist}_{subgo}_mpnet.pck"
+            params:
+                dist=f"{dist}",
+                sub=f"{subgo}"
+            script:
+                "scripts/generate_go_matrix.py" 
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    for dist in ["kl", "hell", "jef", "js", "tvm", "bha"]:
+        rule:
+            name: f"generate_matrix_{dist}_go_{subgo}"
+            input:
+                f"data/go/go_{subgo}_embs.csv",
+                f"results/go/classes_{subgo}.pck",
+                f"results/go/set_classes_{subgo}.pck"
+            output:
+                f"results/go/q_{dist}_{subgo}.pck"
+            params:
+                dist=f"{dist}",
+                sub=f"{subgo}"
+            script:
+                "scripts/generate_go_matrix.py" 
+
+rule generate_auic_models_hpo:
+    input:
+        "data/hpo/phen_map.pck",
+        "data/hpo/phen.csv",
+        "data/hpo/phen_sentence-transformers/all-mpnet-base-v2.csv",
+        "data/hpo/phen_FremyCompany/BioLORD-2023.csv",
+        "data/hpo/phen_inokufu/bert-base-uncased-xnli-sts-finetuned-education.csv",
+        "results/hpo/classes.pck",
+        "results/hpo/set_classes.pck",
+        "results/hpo/q_kl.pck",
+        "results/hpo/q_kl_sentence-transformers/all-mpnet-base-v2.pck",
+        "results/hpo/q_kl_FremyCompany/BioLORD-2023.pck",
+        "results/hpo/q_kl_inokufu/bert-base-uncased-xnli-sts-finetuned-education.pck"
+    output:
+        report("results/plots/auic_hpo_models.pdf", category="Plots HPO")
+    script:
+        "scripts/generate_auic_models_hpo.py"
+
+for model in ['sentence-transformers/all-mpnet-base-v2', 'FremyCompany/BioLORD-2023', 
+'inokufu/bert-base-uncased-xnli-sts-finetuned-education']:
+    rule:
+        name: f"generate_matrix_{model}_hpo"
+        input:
+            "data/hpo/phen_map.pck",
+            f"data/hpo/phen_{model}.csv",
+            "results/hpo/classes.pck",
+            "results/hpo/set_classes.pck"
+        output:
+            f"results/hpo/q_kl_{model}.pck"
+        params:
+            dist="kl"
+        script:
+            "scripts/generate_hpo_matrix.py"
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    rule:
+        name: f"generate_classes_go_{subgo}"
+        input:
+            f"data/go/go_{subgo}_embs.csv",
+        output:
+            f"results/go/classes_{subgo}.pck", 
+            f"results/go/set_classes_{subgo}.pck"
+        params:
+            sub = f"{subgo}"
+        script:
+            "scripts/get_classes_go.py"
+
+for subgo in ["biological_process", "cellular_component", "molecular_function"]:
+    for model in ['sentence-transformers/all-mpnet-base-v2', 'FremyCompany/BioLORD-2023', 
+    'inokufu/bert-base-uncased-xnli-sts-finetuned-education']:
+        rule:
+            name: f"generate_embs_go_{subgo}_{model}"
+            output:
+                f"data/go_{subgo}_{model}.csv",
+                f"data/go/go_{subgo}_embs_{model}.csv"
+            params:
+                sub = f"{subgo}",
+                model = f"{model}"
+            resources:
+                nvidia_gpu=1
+            script:
+                "scripts/generate_embs_go.py"
+
+
+for model in ['sentence-transformers/all-mpnet-base-v2', 'FremyCompany/BioLORD-2023', 
+'inokufu/bert-base-uncased-xnli-sts-finetuned-education']:
+    rule:
+        name: f'generate_embs_hpo_{model}'
+        params:
+            model=f'{model}'
+        resources:
+            nvidia_gpu=1
+        output:
+            f"data/hpo/phen_{model}.csv"
+        script:
+            "scripts/generate_embs_hpo.py"
