@@ -91,7 +91,7 @@ rule auic_biolord:
     output:
         report("results/plots/auic_hpo_biolord.pdf", category="Plots HPO")
     script:
-        "scripts/generate_auic.py"
+        "scripts/generate_auic_hpo.py"
 
 rule auic_biobert:
     input:
@@ -108,7 +108,7 @@ rule auic_biobert:
     output:
         report("results/plots/auic_hpo_biobert.pdf", category="Plots HPO")
     script:
-        "scripts/generate_auic.py"
+        "scripts/generate_auic_hpo.py"
 
 for dist in ["kl", "hell", "jef", "js", "tvm", "bha"]:
     rule:
